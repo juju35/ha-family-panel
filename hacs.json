@@ -1,0 +1,7 @@
+{
+  "name": "Family Panel",
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "family_panel.zip",
+  "homeassistant": "2026.11.0"
+}
