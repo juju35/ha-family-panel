@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Добавляет панель «Семья» в боковое меню: школа, календарь, питание, дела и экранное время. Источники находятся по интеграциям; выберите их сами в параметрах."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel уже настроен."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Источники Family Panel",
+        "description": "Выберите объекты, которые показывает панель. Пустой список заполняется объектами подходящих интеграций (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Члены семьи",
+          "calendars": "Календари",
+          "meals": "Планы питания",
+          "shopping": "Списки покупок",
+          "chores": "Дела",
+          "waste": "Вывоз мусора",
+          "countdowns": "Обратные отсчёты"
+        }
+      }
+    }
+  }
+}

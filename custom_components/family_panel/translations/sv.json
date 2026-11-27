@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Lägger till Familj-panelen i sidofältet: skola, kalender, måltider, sysslor och skärmtid. Källorna hittas per integration; välj dem själv i alternativen."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel är redan konfigurerat."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Källor för Family Panel",
+        "description": "Välj de entiteter som panelen visar. En tom lista fylls med entiteterna från de integrationer som är gjorda för den (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Familjemedlemmar",
+          "calendars": "Kalendrar",
+          "meals": "Matsedlar",
+          "shopping": "Inköpslistor",
+          "chores": "Sysslor",
+          "waste": "Sophämtning",
+          "countdowns": "Nedräkningar"
+        }
+      }
+    }
+  }
+}

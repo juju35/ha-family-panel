@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Ajoute le panneau Famille à la barre latérale : école, agenda, repas, tâches et temps d'écran. Les sources sont trouvées par intégration ; ouvrez les options pour les choisir vous-même."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sources de Family Panel",
+        "description": "Choisissez les entités affichées par le panneau. Une liste laissée vide est remplie avec les entités des intégrations prévues pour elle (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Membres de la famille",
+          "calendars": "Calendriers",
+          "meals": "Plannings de repas",
+          "shopping": "Listes de courses",
+          "chores": "Tâches",
+          "waste": "Collectes des déchets",
+          "countdowns": "Comptes à rebours"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Voegt het Gezin-paneel toe aan de zijbalk: school, agenda, maaltijden, klusjes en schermtijd. De bronnen worden per integratie gevonden; kies ze zelf in de opties."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel is al ingesteld."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bronnen van Family Panel",
+        "description": "Kies de entiteiten die het paneel toont. Een lege lijst wordt gevuld met de entiteiten van de integraties die ervoor bedoeld zijn (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Gezinsleden",
+          "calendars": "Agenda's",
+          "meals": "Maaltijdplanningen",
+          "shopping": "Boodschappenlijsten",
+          "chores": "Klusjes",
+          "waste": "Afvalophaling",
+          "countdowns": "Aftellers"
+        }
+      }
+    }
+  }
+}

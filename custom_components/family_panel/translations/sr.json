@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Додаје панел Породица у бочну траку: школа, календар, оброци, обавезе и време пред екраном. Извори се проналазе по интеграцији; изаберите их сами у опцијама."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel је већ подешен."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Извори за Family Panel",
+        "description": "Изаберите ентитете које панел приказује. Празан списак се попуњава ентитетима интеграција намењених њему (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Чланови породице",
+          "calendars": "Календари",
+          "meals": "Планови оброка",
+          "shopping": "Спискови за куповину",
+          "chores": "Обавезе",
+          "waste": "Одвоз отпада",
+          "countdowns": "Одбројавања"
+        }
+      }
+    }
+  }
+}

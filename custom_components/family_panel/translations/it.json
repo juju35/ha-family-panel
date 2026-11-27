@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Aggiunge il pannello Famiglia alla barra laterale: scuola, agenda, pasti, faccende e tempo di utilizzo. Le fonti vengono trovate per integrazione; scegline tu nelle opzioni."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel è già configurato."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Fonti di Family Panel",
+        "description": "Scegli le entità mostrate dal pannello. Una lista lasciata vuota viene riempita con le entità delle integrazioni pensate per essa (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Membri della famiglia",
+          "calendars": "Calendari",
+          "meals": "Piani pasti",
+          "shopping": "Liste della spesa",
+          "chores": "Faccende",
+          "waste": "Raccolta rifiuti",
+          "countdowns": "Conti alla rovescia"
+        }
+      }
+    }
+  }
+}
