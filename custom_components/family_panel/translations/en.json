@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Adds the Family panel to the sidebar: school, agenda, meals, chores and screen time. The sources are found by integration; pick them in the options to choose them yourself."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Family Panel sources",
+        "description": "Pick the entities the panel shows. A list left empty is filled with the entities of the integrations made for it (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Family members",
+          "calendars": "Calendars",
+          "meals": "Meal plans",
+          "shopping": "Shopping lists",
+          "chores": "Chores",
+          "waste": "Waste collections",
+          "countdowns": "Countdowns"
+        }
+      }
+    }
+  }
+}

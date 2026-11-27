@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Додає панель «Родина» до бічного меню: школа, календар, харчування, справи й екранний час. Джерела знаходяться за інтеграціями; виберіть їх самі в параметрах."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel уже налаштовано."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Джерела Family Panel",
+        "description": "Виберіть об'єкти, які показує панель. Порожній список заповнюється об'єктами відповідних інтеграцій (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Члени родини",
+          "calendars": "Календарі",
+          "meals": "Плани харчування",
+          "shopping": "Списки покупок",
+          "chores": "Справи",
+          "waste": "Вивезення сміття",
+          "countdowns": "Зворотні відліки"
+        }
+      }
+    }
+  }
+}

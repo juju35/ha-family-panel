@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Fügt das Familien-Panel zur Seitenleiste hinzu: Schule, Kalender, Essen, Aufgaben und Bildschirmzeit. Die Quellen werden nach Integration gefunden; wähle sie in den Optionen selbst aus."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Quellen von Family Panel",
+        "description": "Wähle die Entitäten, die das Panel zeigt. Eine leere Liste wird mit den Entitäten der passenden Integrationen gefüllt (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Familienmitglieder",
+          "calendars": "Kalender",
+          "meals": "Essenspläne",
+          "shopping": "Einkaufslisten",
+          "chores": "Aufgaben",
+          "waste": "Müllabfuhr",
+          "countdowns": "Countdowns"
+        }
+      }
+    }
+  }
+}

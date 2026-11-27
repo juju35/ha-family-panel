@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Dodaje panel Rodzina do paska bocznego: szkoła, kalendarz, posiłki, obowiązki i czas przed ekranem. Źródła są wyszukiwane według integracji; wybierz je sam w opcjach."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel jest już skonfigurowany."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Źródła Family Panel",
+        "description": "Wybierz encje pokazywane w panelu. Pusta lista jest wypełniana encjami przeznaczonych do niej integracji (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Członkowie rodziny",
+          "calendars": "Kalendarze",
+          "meals": "Plany posiłków",
+          "shopping": "Listy zakupów",
+          "chores": "Obowiązki",
+          "waste": "Wywóz śmieci",
+          "countdowns": "Odliczania"
+        }
+      }
+    }
+  }
+}

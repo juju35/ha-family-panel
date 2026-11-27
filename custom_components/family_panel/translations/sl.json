@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Doda ploščo Družina v stransko vrstico: šola, koledar, obroki, opravila in čas pred zaslonom. Vire najde po integraciji; izberite jih sami v možnostih."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel je že nastavljen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Viri za Family Panel",
+        "description": "Izberite entitete, ki jih plošča prikazuje. Prazen seznam se zapolni z entitetami integracij, namenjenih zanj (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Družinski člani",
+          "calendars": "Koledarji",
+          "meals": "Jedilniki",
+          "shopping": "Nakupovalni seznami",
+          "chores": "Opravila",
+          "waste": "Odvoz odpadkov",
+          "countdowns": "Odštevanja"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Pridá panel Rodina do bočného panela: škola, kalendár, jedlo, povinnosti a čas pred obrazovkou. Zdroje sa hľadajú podľa integrácie; vyberte ich sami v možnostiach."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel je už nastavený."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Zdroje Family Panel",
+        "description": "Vyberte entity, ktoré panel zobrazuje. Prázdny zoznam sa vyplní entitami integrácií určených preň (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Členovia rodiny",
+          "calendars": "Kalendáre",
+          "meals": "Jedálničky",
+          "shopping": "Nákupné zoznamy",
+          "chores": "Povinnosti",
+          "waste": "Odvoz odpadu",
+          "countdowns": "Odpočítavania"
+        }
+      }
+    }
+  }
+}

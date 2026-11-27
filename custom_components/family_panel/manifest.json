@@ -1,0 +1,27 @@
+{
+  "domain": "family_panel",
+  "name": "Family Panel",
+  "after_dependencies": [
+    "calendar",
+    "mealie",
+    "person",
+    "todo",
+    "workday"
+  ],
+  "codeowners": [
+    "@juju35"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "panel_custom"
+  ],
+  "documentation": "https://github.com/juju35/ha-family-panel",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/juju35/ha-family-panel/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "1.0.0"
+}

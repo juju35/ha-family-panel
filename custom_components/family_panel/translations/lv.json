@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Pievieno sānjoslai paneli Ģimene: skola, kalendārs, ēdienreizes, mājas darbi un ekrāna laiks. Avotus atrod pēc integrācijas; izvēlieties tos paši opcijās."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel jau ir iestatīts."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Family Panel avoti",
+        "description": "Izvēlieties entītijas, ko rāda panelis. Tukšs saraksts tiek aizpildīts ar tam paredzēto integrāciju entītijām (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Ģimenes locekļi",
+          "calendars": "Kalendāri",
+          "meals": "Ēdienkartes",
+          "shopping": "Iepirkumu saraksti",
+          "chores": "Mājas darbi",
+          "waste": "Atkritumu izvešana",
+          "countdowns": "Atpakaļskaitīšanas"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Adaugă panoul Familie în bara laterală: școală, agendă, mese, treburi și timp pe ecran. Sursele sunt găsite după integrare; alege-le singur în opțiuni."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Family Panel este deja configurat."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sursele Family Panel",
+        "description": "Alege entitățile afișate de panou. O listă lăsată goală este completată cu entitățile integrărilor potrivite (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Membrii familiei",
+          "calendars": "Calendare",
+          "meals": "Planuri de mese",
+          "shopping": "Liste de cumpărături",
+          "chores": "Treburi",
+          "waste": "Colectarea deșeurilor",
+          "countdowns": "Numărători inverse"
+        }
+      }
+    }
+  }
+}

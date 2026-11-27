@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Panel",
+        "description": "Hozzáadja a Család panelt az oldalsávhoz: iskola, naptár, étkezés, házimunka és képernyőidő. A forrásokat integráció szerint keresi meg; a beállításokban magad is kiválaszthatod őket."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "A Family Panel már be van állítva."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "A Family Panel forrásai",
+        "description": "Válaszd ki, mely entitásokat mutassa a panel. Az üresen hagyott lista a hozzá készült integrációk entitásaival töltődik fel (Mealie, Bring, Donetick, Waste Collection Schedule…).",
+        "data": {
+          "persons": "Családtagok",
+          "calendars": "Naptárak",
+          "meals": "Étkezési tervek",
+          "shopping": "Bevásárlólisták",
+          "chores": "Házimunka",
+          "waste": "Hulladékszállítás",
+          "countdowns": "Visszaszámlálások"
+        }
+      }
+    }
+  }
+}
