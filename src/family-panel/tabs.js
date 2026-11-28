@@ -98,6 +98,9 @@ FamilyPanel.STYLE += `
   .night-ui .bigdish { background:radial-gradient(circle, var(--d) 0 30%, #2b2f38 31% 46%, #4a4237 47% 62%, #3a342c 63%); }
   .editor { margin-top:14px; border-top:1px dashed var(--fp-line); padding-top:12px; }
   .editor .add { margin-top:8px; }
+  .ask { position:fixed; inset:0; z-index:10; display:grid; place-items:center; background:rgba(0,0,0,.38); padding:16px; }
+  .ask .card { width:min(400px, 100%); box-shadow:0 12px 40px rgba(0,0,0,.35); }
+  .asktext { font-size:15px; font-weight:600; line-height:1.4; }
   .lateCard { background:color-mix(in srgb, var(--fp-bad) 7%, var(--fp-card)); }
   @container fp-main (max-width: 640px) { .plates { grid-template-columns:repeat(4, minmax(0,1fr)); } }
 `;
@@ -406,13 +409,15 @@ Object.assign(FamilyPanel.prototype, {
     const plan = this._plan();
     const today = fpDayKey(now);
     const can = this._inv.mealie?.length && this._has("mealie", "set_mealplan");
+    // A planned meal is offered for change only when Mealie can change it (no second meal in the slot)
+    const canEdit = (meal) => can && (!meal || (meal.id && this._canChangeMeal()));
     const dinner = plan[today]?.dinner;
     const lunch = plan[today]?.lunch;
     const meta = dinner ? [dinner.time ? fpTime(this._hass, dinner.time) : "", dinner.servings ? fpT("servings", { n: dinner.servings }) : "", dinner.minutes ? fpMinutes(dinner.minutes) : ""].filter(Boolean).join(" · ") : "";
     const tonight =
       this._inv.meals.length || this._inv.mealie?.length
         ? `<div class="card"><div class="h"><b>${fpEsc(fpT("tonight"))}</b><span class="small muted">${this._inv.mealie?.length ? "Mealie" : ""}</span></div><div class="hero2"><span class="bigdish" style="--d:${dinner ? fpDishColor(dinner.name) : "transparent"}"></span><div class="t"><div class="big">${fpEsc(dinner?.name || fpT("nothing_tonight"))}</div><div class="note">${fpEsc(meta)}</div>${lunch ? `<div class="small muted" style="margin-top:4px">${fpEsc(`${fpT("lunch")} · ${lunch.name}`)}</div>` : ""}</div>${
-            can ? this._btn(fpT(dinner ? "change" : "plan"), `data-action="meal" data-day="${today}" data-type="dinner"`, "acc") : ""
+            canEdit(dinner) ? this._btn(fpT(dinner ? "change" : "plan"), `data-action="meal" data-day="${today}" data-type="dinner"`, "acc") : ""
           }</div></div>`
         : `<div class="card empty">${fpEsc(fpT("no_meals"))}</div>`;
     // The week as plates, Monday first; a tap plans the day (Mealie)
@@ -421,7 +426,9 @@ Object.assign(FamilyPanel.prototype, {
       const d = fpDayKey(fpAddDays(monday, i));
       const m = plan[d] || {};
       const shown = m.dinner || m.lunch;
-      const attrs = can ? `data-action="meal" data-day="${d}" data-type="${m.dinner || !m.lunch ? "dinner" : "lunch"}"` : 'tabindex="-1"';
+      // The slot a tap plans: the dinner, else the lunch shown; with no change possible, the empty one
+      const type = canEdit(m.dinner) ? "dinner" : canEdit(m.lunch) ? "lunch" : "";
+      const attrs = type ? `data-action="meal" data-day="${d}" data-type="${type}"` : 'tabindex="-1" aria-disabled="true"';
       return `<button class="plate${d < today ? " past" : ""}${d === today ? " today" : ""}" ${attrs} title="${fpEsc([m.lunch ? `${fpT("lunch")}: ${m.lunch.name}` : "", m.dinner ? `${fpT("dinner")}: ${m.dinner.name}` : ""].filter(Boolean).join("\n"))}"><span class="dish${shown ? "" : " none"}" style="--d:${shown ? fpDishColor(shown.name) : "transparent"}"></span><b class="${d === today ? "acc" : ""}">${fpEsc(fpWeekday(this._hass, `${d}T12:00:00`, "short"))}</b><span class="nm">${fpEsc(shown?.name || fpT("to_plan"))}</span></button>`;
     }).join("");
     const week = `<div class="card"><div class="h"><b>${fpEsc(fpT("this_week"))}</b>${can ? `<span class="small muted">${fpEsc(fpT("tap_to_plan"))}</span>` : ""}</div><div class="plates">${plates}</div>${this._mealEditor(plan)}</div>`;
@@ -434,11 +441,11 @@ Object.assign(FamilyPanel.prototype, {
     if (!e) return "";
     const current = plan[e.day]?.[e.type];
     const recipes = (this._recipes || []).map((r) => `<button class="item" data-action="meal-recipe" data-id="${fpEsc(r.id)}"><span class="grow"><b>${fpEsc(r.name)}</b>${r.minutes ? `<span class="small muted">${fpEsc(fpMinutes(r.minutes))}</span>` : ""}</span></button>`).join("");
-    return `<div class="editor"><div class="h"><b>${fpEsc(fpT("plan_day", { day: fpWeekday(this._hass, `${e.day}T12:00:00`), meal: fpT(e.type).toLowerCase() }))}</b><span class="flow">${FP_SLOTS.map((t) => `<button class="chip${t === e.type ? " sel" : ""}" data-action="meal-type" data-type="${t}">${fpEsc(fpT(t))}</button>`).join("")}</span></div>
+    return `<div class="editor"><div class="h"><b>${fpEsc(fpT("plan_day", { day: fpWeekday(this._hass, `${e.day}T12:00:00`), meal: fpT(e.type).toLowerCase() }))}</b><span class="flow">${FP_SLOTS.filter((t) => { const m = plan[e.day]?.[t]; return !m || (m.id && this._canChangeMeal()); }).map((t) => `<button class="chip${t === e.type ? " sel" : ""}" data-action="meal-type" data-type="${t}">${fpEsc(fpT(t))}</button>`).join("")}</span></div>
       ${current ? `<div class="small muted" style="margin-bottom:6px">${fpEsc(fpT("planned", { name: current.name }))}</div>` : ""}
       <div class="add"><input data-mealq placeholder="${fpEsc(fpT("search_recipe"))}" aria-label="${fpEsc(fpT("search_recipe"))}" value="${fpEsc(e.q || "")}"><button class="btn" data-action="meal-search">${fpEsc(fpT("search"))}</button></div>
       ${recipes ? `<div style="margin-top:8px">${recipes}</div>` : ""}
-      <div class="btns">${this._btn(fpT("save_note"), 'data-action="meal-note"', "acc")}${this._has("mealie", "set_random_mealplan") ? this._btn(fpT("random"), 'data-action="meal-random"') : ""}${current?.id && this._has("mealie", "delete_mealplan") ? this._btn(fpT("clear"), 'data-action="meal-clear"', "bad") : ""}${this._btn(fpT("cancel"), 'data-action="meal-cancel"')}</div></div>`;
+      <div class="btns">${this._btn(fpT("save_note"), 'data-action="meal-note"', "acc")}${this._has("mealie", "set_random_mealplan") && (!current || this._has("mealie", "delete_mealplan")) ? this._btn(fpT("random"), 'data-action="meal-random"') : ""}${current?.id && this._has("mealie", "delete_mealplan") ? this._btn(fpT("clear"), 'data-action="meal-clear"', "bad") : ""}${this._btn(fpT("cancel"), 'data-action="meal-cancel"')}</div></div>`;
   },
   /** The shopping list: what is left first, by aisle when the items carry one, then what was bought. */
   _shoppingCard(id) {
@@ -572,7 +579,7 @@ Object.assign(FamilyPanel.prototype, {
       fl ? this._bonusBtn(k, 30) : "",
       fl ? this._bonusBtn(k, 60) : "",
       s.bonus && this._has("family_link", "revoke_bonus") ? this._btn(fpT("revoke"), `data-action="fl" data-service="revoke_bonus" data-kid="${fpEsc(s.name)}"`) : "",
-      fl ? this._btn(fpT(locked ? "unlock" : "lock"), `data-action="fl" data-service="${locked ? "unlock" : "lock"}" data-kid="${fpEsc(s.name)}"${locked ? "" : ' data-ask="1"'}`, locked ? "" : "bad") : s.lockId ? this._btn(fpT(s.locked ? "unlock" : "lock"), `data-action="toggle" data-entity="${fpEsc(s.lockId)}"`, s.locked ? "" : "bad") : "",
+      fl ? this._btn(fpT(locked ? "unlock" : "lock"), `data-action="fl" data-service="${locked ? "unlock" : "lock"}" data-kid="${fpEsc(s.name)}"${locked ? "" : ' data-ask="1"'}`, locked ? "" : "bad") : s.lockId ? this._btn(fpT(s.locked ? "unlock" : "lock"), `data-action="lockswitch" data-entity="${fpEsc(s.lockId)}" data-kid="${fpEsc(s.name)}" data-on="${s.locked ? "0" : "1"}"`, s.locked ? "" : "bad") : "",
       fl ? this._btn(fpT("ring"), `data-action="fl" data-service="ring" data-kid="${fpEsc(s.name)}"`) : s.ringId ? this._btn(fpT("ring"), `data-action="press" data-entity="${fpEsc(s.ringId)}"`) : "",
     ].join("");
     const left = s.remaining !== null ? fpT("remaining", { time: fpMinutes(s.remaining) }) : "";
@@ -602,7 +609,7 @@ Object.assign(FamilyPanel.prototype, {
             const type = String(e.entry_type || "").toLowerCase();
             if (!name || !e.mealplan_date || !FP_SLOTS.includes(type)) continue;
             const minutes = fpNum(String(recipe.total_time ?? recipe.perform_time ?? "").match(/\d+/)?.[0]);
-            out.push({ entry, id: e.mealplan_id ?? e.id ?? null, day: String(e.mealplan_date).slice(0, 10), type, name, servings: fpNum(String(recipe.recipe_yield ?? recipe.recipe_servings ?? "").match(/\d+/)?.[0]), minutes });
+            out.push({ entry, id: e.mealplan_id ?? e.id ?? null, recipe: recipe.recipe_id ?? recipe.id ?? null, day: String(e.mealplan_date).slice(0, 10), type, name, servings: fpNum(String(recipe.recipe_yield ?? recipe.recipe_servings ?? "").match(/\d+/)?.[0]), minutes });
           }
         } catch (_e) {
           /* Mealie unreachable: the calendars stay */
@@ -626,19 +633,35 @@ Object.assign(FamilyPanel.prototype, {
     }
     this._render();
   },
-  /** Plans the slot being edited: a recipe, a note, a random recipe, or nothing; the meal there before goes. */
+  /** Can a planned meal be changed (Mealie's update or delete action)? Older versions only add meals. */
+  _canChangeMeal() {
+    return this._has("mealie", "update_mealplan") || this._has("mealie", "delete_mealplan");
+  },
+  /**
+   * Plans the slot being edited: a recipe, a note, a random recipe, or nothing. A meal already there is updated in
+   * place (update_mealplan), or deleted then planned again when an update cannot do it (a recipe replaced by a note
+   * would keep its recipe, a random recipe has no update); a slot is never given a second meal.
+   */
   async _planMeal(kind, recipeId) {
     const e = this._mealEdit;
-    const entry = this._inv?.mealie?.[0];
+    const current = e && this._plan()[e.day]?.[e.type];
+    const entry = current?.entry || this._inv?.mealie?.[0];
     if (!e || !entry) return;
     const note = this.shadowRoot.querySelector("input[data-mealq]")?.value.trim() || e.q || "";
-    const current = this._plan()[e.day]?.[e.type];
-    const slot = { config_entry_id: entry, date: e.day, entry_type: e.type };
     if (kind === "note" && !note) return;
-    if (current?.id && this._has("mealie", "delete_mealplan")) await this._hass.callService("mealie", "delete_mealplan", { config_entry_id: entry, mealplan_id: current.id }).catch(() => {});
-    if (kind === "recipe") await this._hass.callService("mealie", "set_mealplan", { ...slot, recipe_id: recipeId });
-    else if (kind === "note") await this._hass.callService("mealie", "set_mealplan", { ...slot, note_title: note });
-    else if (kind === "random") await this._hass.callService("mealie", "set_random_mealplan", slot);
+    const slot = { config_entry_id: entry, date: e.day, entry_type: e.type };
+    const what = kind === "recipe" ? { recipe_id: recipeId } : kind === "note" ? { note_title: note } : null;
+    const call = (service, data) => this._hass.callService("mealie", service, data);
+    if (current?.id) {
+      const update = this._has("mealie", "update_mealplan") && what && (kind === "recipe" || !current.recipe);
+      if (update) await call("update_mealplan", { ...slot, mealplan_id: current.id, ...what });
+      else if (this._has("mealie", "delete_mealplan")) {
+        await call("delete_mealplan", { config_entry_id: entry, mealplan_id: current.id });
+        if (what) await call("set_mealplan", { ...slot, ...what });
+        else if (kind === "random") await call("set_random_mealplan", slot);
+      }
+    } else if (what) await call("set_mealplan", { ...slot, ...what });
+    else if (kind === "random") await call("set_random_mealplan", slot);
     this._mealEdit = null;
     this._recipes = [];
     await this._fetch();
@@ -650,15 +673,27 @@ Object.assign(FamilyPanel.prototype, {
     if (a === "todo") {
       await this._hass.callService("todo", "update_item", { item: d.uid, status: d.done === "1" ? "completed" : "needs_action" }, { entity_id: d.todo });
       await this._fetch();
+    } else if (a === "ask-ok") {
+      const next = this._ask?.data;
+      this._ask = null;
+      this._render();
+      if (next) await this._richAction({ ...next, confirmed: "1" }, el);
+    } else if (a === "ask-cancel") {
+      this._ask = null;
+      this._render();
     } else if (a === "sign") {
-      if (!this._confirm(fpT("confirm_sign", { title: d.name }))) return true;
+      if (!d.confirmed) return this._askFirst(fpT("confirm_sign", { title: d.name }), fpT("sign"), d);
       await this._hass.callService("ent_one", "sign_word", { word_id: d.word, child_id: d.kid });
     } else if (a === "more") {
       if (d.entity) this.dispatchEvent(new CustomEvent("hass-more-info", { bubbles: true, composed: true, detail: { entityId: d.entity } }));
     } else if (a === "bonus") await this._hass.callService("family_link", "add_bonus", { child: d.kid, minutes: Number(d.minutes) });
     else if (a === "fl") {
-      if (d.ask && !this._confirm(fpT("confirm_lock", { name: d.kid }))) return true;
+      if (d.ask && !d.confirmed) return this._askFirst(fpT("confirm_lock", { name: d.kid }), fpT("lock"), d, "bad");
       await this._hass.callService("family_link", d.service, { child: d.kid });
+    } else if (a === "lockswitch") {
+      // Family Link versions without the lock action: the device's lock switch
+      if (d.on === "1" && !d.confirmed) return this._askFirst(fpT("confirm_lock", { name: d.kid }), fpT("lock"), d, "bad");
+      await this._hass.callService("switch", d.on === "1" ? "turn_on" : "turn_off", { entity_id: d.entity });
     } else if (a === "schoolmode") await this._hass.callService("family_link", "school_mode", { child: d.kid, enable: d.on === "1" });
     else if (a === "period") {
       this._period = d.period || null;
@@ -684,8 +719,15 @@ Object.assign(FamilyPanel.prototype, {
     } else return false;
     return !!el;
   },
-  /** Asks before an action that cannot be taken back (a word signed, a phone locked). */
-  _confirm(text) {
-    return typeof globalThis.confirm !== "function" || globalThis.confirm(text);
+  /** Asks in the panel before an action that cannot be taken back (a word signed, a phone locked). */
+  _askFirst(text, ok, data, cls = "acc") {
+    this._ask = { text, ok, cls, data: { ...data } };
+    this._render();
+    return true;
+  },
+  /** The confirmation dialog, over the page, its confirm button focused. */
+  _askHtml() {
+    if (!this._ask) return "";
+    return `<div class="ask" data-action="ask-cancel"><div class="card" role="alertdialog" aria-modal="true" aria-label="${fpEsc(this._ask.text)}" data-stop="1"><div class="asktext">${fpEsc(this._ask.text)}</div><div class="btns" style="justify-content:flex-end">${this._btn(fpT("cancel"), 'data-action="ask-cancel"')}${this._btn(this._ask.ok, 'data-action="ask-ok"', `${this._ask.cls} primary`)}</div></div></div>`;
   },
 });

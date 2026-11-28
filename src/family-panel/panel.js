@@ -198,6 +198,10 @@ export class FamilyPanel extends HTMLElement {
     this.shadowRoot.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter" && ev.target.matches?.("input[data-add]")) this._addItem(ev.target);
       if (ev.key === "Enter" && ev.target.matches?.("input[data-mealq]")) this._searchRecipes();
+      if (ev.key === "Escape" && this._ask) {
+        this._ask = null;
+        this._render();
+      }
     });
   }
 
@@ -358,13 +362,14 @@ export class FamilyPanel extends HTMLElement {
         <div class="hbtns"><button class="hbtn" data-action="refresh" aria-label="${fpEsc(fpT("refresh"))}" title="${fpEsc(fpT("refresh"))}">${fpIcon("refresh", 17)}</button></div>
       </div>
       <nav class="tabs" role="tablist">${FP_TABS.map((t) => `<button class="tab${t === this._tab ? " active" : ""}" role="tab" aria-selected="${t === this._tab}" data-tab="${t}">${fpEsc(fpT(`tab_${t}`))}</button>`).join("")}</nav>
-      <main class="${night || this._hass.themes?.darkMode ? "night-ui" : ""}">${FP_TABS.map((t) => `<section data-tab="${t}"${t === this._tab ? "" : " hidden"}>${t === this._tab ? sections[t]() : ""}</section>`).join("")}</main>`;
+      <main class="${night || this._hass.themes?.darkMode ? "night-ui" : ""}">${FP_TABS.map((t) => `<section data-tab="${t}"${t === this._tab ? "" : " hidden"}>${t === this._tab ? sections[t]() : ""}</section>`).join("")}</main>${this._askHtml()}`;
     const menu = this.shadowRoot.querySelector("ha-menu-button");
     if (menu) {
       menu.hass = this._hass;
       menu.narrow = this._narrow;
     }
     if (scroll && this.shadowRoot.host.parentElement) this.shadowRoot.host.parentElement.scrollTop = scroll;
+    if (this._ask) this.shadowRoot.querySelector('.ask [data-action="ask-ok"]')?.focus?.();
   }
 
   _timeline(now) {
@@ -450,8 +455,9 @@ export class FamilyPanel extends HTMLElement {
 
   // ── Actions ──
   async _onClick(ev) {
-    const el = ev.composedPath().find((n) => n instanceof Element && (n.dataset?.tab || n.dataset?.action || n.dataset?.child || n.dataset?.theme));
-    if (!el) return;
+    // data-stop: a click inside the confirmation dialog does not reach the backdrop (which cancels it)
+    const el = ev.composedPath().find((n) => n instanceof Element && (n.dataset?.tab || n.dataset?.action || n.dataset?.child || n.dataset?.theme || n.dataset?.stop));
+    if (!el || el.dataset.stop) return;
     const d = el.dataset;
     if (d.action && (await this._richAction(d, el))) return;
     if (d.tab && el.classList.contains("tab")) {

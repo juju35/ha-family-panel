@@ -299,7 +299,7 @@ export const mealplan = {
   ],
 };
 export const services = {
-  mealie: { get_mealplan: {}, get_recipes: {}, set_mealplan: {}, set_random_mealplan: {} },
+  mealie: { get_mealplan: {}, get_recipes: {}, set_mealplan: {}, set_random_mealplan: {}, update_mealplan: {}, delete_mealplan: {} },
   family_link: { add_bonus: {}, revoke_bonus: {}, lock: {}, unlock: {}, ring: {}, refresh_location: {}, school_mode: {} },
   ent_one: { sign_word: {} },
 };
