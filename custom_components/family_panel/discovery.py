@@ -116,7 +116,8 @@ FAMILY_LINK_ROLES = {
 NAME_PREFIX = re.compile(r"^(?:pronote|ent\s*one|educartable|skolengo|family\s*link)\s*[-:·]?\s*", re.IGNORECASE)
 CHORE_WORDS = re.compile(r"chore|tache|tâche|menage|ménage|corvee|corvée|hausarbeit|klus", re.IGNORECASE)
 MAX_CALENDARS = 6
-POINTS_WORDS = re.compile(r"points?\b|_points?_|punkte|puntos|punti", re.IGNORECASE)
+# A whole word of the entity id: "alex_points", not "alex_access_point"
+POINTS_WORDS = re.compile(r"(?:^|[._])(?:points|punkte|puntos|punti)(?:_|$)", re.IGNORECASE)
 
 
 def _fold(text: str) -> str:

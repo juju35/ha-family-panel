@@ -26,14 +26,15 @@ export const fpGrade = (g) => ({
   day: fpKeyOf(g.date),
   value: fpNum(g.grade),
   raw: String(g.grade ?? ""),
-  outOf: fpNum(g.out_of) ?? 20,
+  // A scale of 0 (a missing value read as 0) would divide by zero: out of 20 then
+  outOf: fpNum(g.out_of) || 20,
   classAvg: fpNum(g.class_average),
   min: fpNum(g.min),
   max: fpNum(g.max),
   coef: fpNum(g.coefficient),
 });
 /** An average per subject, with the class's. */
-export const fpAverage = (a) => ({ subject: a.subject || "", value: fpNum(a.average), outOf: fpNum(a.out_of) ?? 20, classAvg: fpNum(a.class), min: fpNum(a.min), max: fpNum(a.max) });
+export const fpAverage = (a) => ({ subject: a.subject || "", value: fpNum(a.average), outOf: fpNum(a.out_of) || 20, classAvg: fpNum(a.class), min: fpNum(a.min), max: fpNum(a.max) });
 /** The canteen's next lunch (Pronote's menus): its courses, the foods of each. */
 export const fpMenu = (s, now = Date.now()) => {
   const today = fpDayKey(now);
@@ -270,7 +271,7 @@ export const fpChores = (lists, items, now = Date.now()) => {
       const p = fpPoints(x.summary);
       const due = fpKeyOf(x.due);
       const done = x.status === "completed";
-      return { list: id, uid: x.uid, owner, name: p.name, points: p.points, due, done, overdue: !done && !!due && due < today, today: !due || due <= today };
+      return { list: id, uid: x.uid, owner, name: p.name, points: p.points, due, done, overdue: !done && !!due && due < today };
     }),
   );
 };

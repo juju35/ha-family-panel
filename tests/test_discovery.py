@@ -110,3 +110,13 @@ async def test_periods_books_points_and_mealie(hass: HomeAssistant):
     assert by_name["Alex"]["points"] == "sensor.kc_alex_points"
     assert by_name["Noé"]["points"] is None
     assert inv["mealie"] == [mealie.entry_id]
+
+
+async def test_points_sensor_is_a_whole_word(hass: HomeAssistant):
+    """An access point named after a child is not their points sensor."""
+    ent, alex = _device(hass, "ent_one", "Alex")
+    _entity(hass, ent, alex, "sensor", "ent_one", "alex_sign", "words_to_sign")
+    _entity(hass, ent, alex, "sensor", "unifi", "ap", None, "alex_access_point")
+    assert async_inventory(hass, {})["children"][0]["points"] is None
+    _entity(hass, ent, alex, "sensor", "kidschores", "pts", None, "alex_points")
+    assert async_inventory(hass, {})["children"][0]["points"] == "sensor.alex_points"

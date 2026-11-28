@@ -300,6 +300,14 @@ export class FamilyPanel extends HTMLElement {
     const inv = this._inv;
     const ids = [...inv.waste, ...inv.countdowns, ...inv.shopping, ...inv.chores, ...inv.persons, inv.saint, inv.workday];
     for (const c of inv.children) ids.push(...Object.values(c.school?.entities || {}), ...Object.values(c.family_link?.entities || {}), c.points);
+    // Who is home: the Proximity sensors of each person (distance, direction), which change without the person;
+    // looked up once per inventory, not at every state change
+    if (this._proxFor !== inv) {
+      const ends = inv.persons.flatMap((id) => [`_${id.slice(7)}_distance`, `_${id.slice(7)}_direction_of_travel`]);
+      this._proxIds = Object.keys(this._hass.states).filter((id) => id.startsWith("sensor.") && ends.some((e) => id.endsWith(e)));
+      this._proxFor = inv;
+    }
+    ids.push(...this._proxIds);
     return ids.filter(Boolean);
   }
   _signature() {
