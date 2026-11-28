@@ -1,7 +1,7 @@
 """Constants for the Family Panel integration."""
 
 DOMAIN = "family_panel"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 # Files served by the integration, and the sidebar panel (its own path, not /family_panel, so the frontend's panel
 # route never shadows the files)

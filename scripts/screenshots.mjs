@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { eventsBetween, inventory, NOW, states, todos } from "./mock-states.mjs";
+import { eventsBetween, inventory, mealplan, NOW, services, states, todos } from "./mock-states.mjs";
 import { writeIfChanged } from "./screenshot-write.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -61,14 +61,22 @@ async function open(s) {
   await page.goto(`${ORIGIN}/`);
   await page.addScriptTag({ url: "/family_panel/family-panel.js", type: "module" });
   await page.evaluate(
-    async ({ s, states, inventory, todos, events }) => {
+    async ({ s, states, inventory, todos, events, mealplan, services }) => {
       const hass = {
         states,
         language: "en",
         locale: { language: "en", time_format: "12" },
         user: { is_admin: true },
         themes: { darkMode: s.theme === "dark" },
-        callWS: async (msg) => (msg.type === "todo/item/list" ? { items: todos[msg.entity_id] || [] } : msg.type === "family_panel/update_settings" ? { settings: inventory.settings } : inventory),
+        services,
+        callWS: async (msg) =>
+          msg.type === "todo/item/list"
+            ? { items: todos[msg.entity_id] || [] }
+            : msg.type === "family_panel/update_settings"
+              ? { settings: inventory.settings }
+              : msg.type === "call_service"
+                ? { response: mealplan }
+                : inventory,
         callApi: async (_m, path) => {
           const [, id, query] = /^calendars\/([^?]+)\?(.*)$/.exec(path);
           const q = new URLSearchParams(query);
@@ -80,10 +88,12 @@ async function open(s) {
       const el = document.createElement("family-panel");
       el.panel = { url_path: "family", config: { version: "test" } };
       el.route = { path: `/${s.tab}` };
+      // The School capture shows the Pronote child, whose integration feeds every card
+      if (s.tab === "school") el._child = "noe";
       el.hass = hass;
       document.getElementById("root").appendChild(el);
     },
-    { s, states, inventory, todos, events: Object.fromEntries([...new Set(inventory.calendars.concat(inventory.meals))].map((id) => [id, eventsBetween(id, "0000", "9999")])) },
+    { s, states, inventory, todos, mealplan, services, events: Object.fromEntries([...new Set(inventory.calendars.concat(inventory.meals))].map((id) => [id, eventsBetween(id, "0000", "9999")])) },
   );
   await page.waitForTimeout(800);
   return page;
