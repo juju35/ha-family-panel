@@ -23,6 +23,7 @@ globalThis.HTMLElement = class {
 const defined = new Map();
 globalThis.customElements = { define: (n, c) => defined.set(n, c), get: (n) => defined.get(n) };
 globalThis.history = { replaceState() {} };
+globalThis.Element = class {};
 globalThis.fetch = async () => ({ ok: false, json: async () => ({}) });
 const quiet = console.info;
 console.info = () => {};

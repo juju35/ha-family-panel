@@ -61,7 +61,20 @@ SCHOOL_ROLES = {
     "homework_calendar": "homework_calendar",
     "homework_book": "homework_list",
     "homework_list": "homework_list",
+    # What the Pronote card shows besides: punishments, the canteen's menus, evaluations and the periods
+    "punishments": "punishments",
+    "menus": "menus",
+    "evaluations": "evaluations",
+    "current_period": "current_period",
+    "periods": "periods",
 }
+# Pronote's past periods (terms, semesters): their sensors per translation key, the period named by their
+# `period_key` attribute, else by the end of their entity id
+PERIOD_ROLES = {"grades_period": "grades", "averages_period": "averages", "overall_average_period": "average"}
+PERIOD_ID = re.compile(r"_(?:grades|averages|overall_average)_(\w+)$")
+LEGACY_PERIOD = re.compile(r"_(grades|averages|overall_average)_((?:trimestre|semestre)_\w+)$")
+# ENT ONE's homework notebooks: one to-do list each (unique id ``…_homework_<notebook id>``), ticked to mark done
+BOOK_ID = re.compile(r"_homework_([^_]+)$")
 # The same roles read from the end of the entity id, for versions without translation keys (Pronote's English ids)
 # and for the integrations whose keys are not listed above (Skolengo)
 LEGACY_ROLES = (
@@ -74,6 +87,10 @@ LEGACY_ROLES = (
     ("delays", re.compile(r"_(?:delays|retards)$")),
     ("messages", re.compile(r"_(?:unread_messages|messages|notifications)$")),
     ("to_sign", re.compile(r"_(?:words_to_sign|to_sign|a_signer)$")),
+    ("punishments", re.compile(r"_(?:punishments|punitions)$")),
+    ("menus", re.compile(r"_menus$")),
+    ("information", re.compile(r"_information_and_surveys$")),
+    ("current_period", re.compile(r"_current_period$")),
 )
 # Family Link roles: the integration's translation keys, used as they are
 FAMILY_LINK_ROLES = {
@@ -99,6 +116,8 @@ FAMILY_LINK_ROLES = {
 NAME_PREFIX = re.compile(r"^(?:pronote|ent\s*one|educartable|skolengo|family\s*link)\s*[-:·]?\s*", re.IGNORECASE)
 CHORE_WORDS = re.compile(r"chore|tache|tâche|menage|ménage|corvee|corvée|hausarbeit|klus", re.IGNORECASE)
 MAX_CALENDARS = 6
+# A whole word of the entity id: "alex_points", not "alex_access_point"
+POINTS_WORDS = re.compile(r"(?:^|[._])(?:points|punkte|puntos|punti)(?:_|$)", re.IGNORECASE)
 
 
 def _fold(text: str) -> str:
@@ -116,6 +135,22 @@ def _school_role(entry: er.RegistryEntry) -> str | None:
         return SCHOOL_ROLES[entry.translation_key]
     object_id = entry.entity_id.split(".", 1)[1]
     return next((role for role, pattern in LEGACY_ROLES if pattern.search(object_id)), None)
+
+
+def _period(hass: HomeAssistant, entry: er.RegistryEntry) -> tuple[str, str] | None:
+    """The past period of a Pronote sensor and its role there, else None."""
+    state = hass.states.get(entry.entity_id)
+    key = state.attributes.get("period_key") if state else None
+    object_id = entry.entity_id.split(".", 1)[1]
+    if entry.translation_key in PERIOD_ROLES:
+        role = PERIOD_ROLES[entry.translation_key]
+        key = key or ((m := PERIOD_ID.search(object_id)) and m.group(1))
+    elif not entry.translation_key and (m := LEGACY_PERIOD.search(object_id)):
+        role = "average" if m.group(1) == "overall_average" else m.group(1)
+        key = key or m.group(2)
+    else:
+        return None
+    return (str(key), role) if key else None
 
 
 def _family_link_role(entry: er.RegistryEntry) -> str | None:
@@ -150,12 +185,32 @@ def _children(hass: HomeAssistant, entries: list[er.RegistryEntry]) -> list[dict
             child["name"] = name
         part = child["family_link" if family_link else "school"] or {"source": platform, "entities": {}}
         for entry in group:
+            if not family_link and (period := _period(hass, entry)):
+                part.setdefault("periods", {}).setdefault(period[0], {})[period[1]] = entry.entity_id
+                continue
+            if not family_link and entry.domain == "todo" and (book := BOOK_ID.search(entry.unique_id or "")):
+                part.setdefault("books", {})[book.group(1)] = entry.entity_id
             role = _family_link_role(entry) if family_link else _school_role(entry)
             if role:
                 part["entities"].setdefault(role, entry.entity_id)
         if part["entities"]:
             child["family_link" if family_link else "school"] = part
-    return [c for c in children.values() if c["school"] or c["family_link"]]
+    kids = [c for c in children.values() if c["school"] or c["family_link"]]
+    # Each child's points (KidsChores, ChoreOps, an input_number…): a sensor or number named after them and "points"
+    for kid in kids:
+        first = _fold(kid["name"]).split(" ")[0]
+        kid["points"] = next(
+            (
+                e.entity_id
+                for e in entries
+                if not e.disabled_by
+                and e.domain in ("sensor", "input_number", "number")
+                and POINTS_WORDS.search(e.entity_id)
+                and first in _fold(e.entity_id.split(".", 1)[1]).split("_")
+            ),
+            None,
+        )
+    return kids
 
 
 def _of(entries: list[er.RegistryEntry], domains: tuple[str, ...], platforms: tuple[str, ...]) -> list[str]:
@@ -196,4 +251,6 @@ def async_inventory(hass: HomeAssistant, options: dict[str, Any]) -> dict[str, A
         "persons": picked(CONF_PERSONS, sorted(hass.states.async_entity_ids("person"))),
         "saint": first(SAINT_PLATFORM, "sensor"),
         "workday": first(WORKDAY_PLATFORM, "binary_sensor"),
+        # Mealie's config entries, for its meal plan actions (servings, times, planning a day)
+        "mealie": sorted({e.config_entry_id for e in entries if e.platform == "mealie" and e.config_entry_id}),
     }

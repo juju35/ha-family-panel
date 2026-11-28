@@ -35,9 +35,32 @@ test("Family Link: screen time, limit and what is left", () => {
   assert.equal(s.lockId, "switch.alex_lock");
 });
 
-test("what waits for someone: to sign, unread, homework due tomorrow", () => {
-  // Alex: 1 to sign + Reading due tomorrow; Noé: 1 unread + Maths due tomorrow
-  assert.equal(fp.fpAttention(kids, NOW), 4);
+test("the cards' extras: today's timetable, grades, words to sign, menus, Family Link", () => {
+  const [alex, noe] = kids;
+  assert.equal(noe.lessonsToday.find((l) => l.subject === "Science").canceled, true);
+  assert.equal(noe.lessonsToday.find((l) => l.subject === "History").status, "Room changed");
+  assert.deepEqual([noe.grades[0].value, noe.grades[0].classAvg, noe.grades[0].outOf], [17, 12.4, 20]);
+  assert.equal(noe.averages.find((a) => a.subject === "Science").classAvg, 13.4);
+  assert.deepEqual(noe.menu.foods, ["Leek soup", "Fish and rice", "Apple tart"]);
+  assert.equal(noe.absenceList.filter((a) => !a.justified).length, 1);
+  assert.deepEqual(alex.words.map((w) => w.id), ["w1"]);
+  // ENT ONE's homework ticked through its notebook's to-do list
+  assert.equal(alex.allHomework.find((h) => h.id === "h1").todo, "todo.ent_alex_reading");
+  assert.equal(alex.screen.apps[0].title, "YouTube Kids");
+  assert.equal(noe.screen.bonus, 15);
+  assert.equal(noe.screen.schoolMode.active, true);
+});
+
+test("presence: zone, distance and direction; chores with their points", () => {
+  const people = fp.fpPresence({ ...hass, entities: {} }, inventory.persons, NOW);
+  const noe = people.find((p) => p.id === "person.noe");
+  assert.deepEqual([noe.state, noe.zone], ["zone", "Gym"]);
+  const charlie = people.find((p) => p.name === "Charlie");
+  assert.deepEqual([charlie.state, charlie.distance.value, charlie.direction], ["away", 12.4, "towards"]);
+  assert.deepEqual(fp.fpPoints("Make bed +5"), { name: "Make bed", points: 5 });
+  assert.deepEqual(fp.fpPoints("Water"), { name: "Water", points: null });
+  const chores = fp.fpChores([["todo.x", "Noé"]], { "todo.x": [{ uid: "1", summary: "Dog +4", status: "needs_action", due: "2026-11-25" }] }, NOW);
+  assert.deepEqual([chores[0].name, chores[0].points, chores[0].overdue, chores[0].owner], ["Dog", 4, true, "Noé"]);
 });
 
 test("school tomorrow from the timetables, else from a Workday sensor for tomorrow", () => {

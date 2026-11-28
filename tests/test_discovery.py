@@ -81,3 +81,42 @@ async def test_sources_by_integration_or_options(hass: HomeAssistant):
     picked = async_inventory(hass, {"calendars": ["calendar.dinner"], "countdowns": ["sensor.holidays"]})
     assert picked["calendars"] == ["calendar.dinner"]
     assert picked["countdowns"] == ["sensor.holidays"]
+
+
+async def test_periods_books_points_and_mealie(hass: HomeAssistant):
+    """Pronote's past periods, ENT ONE's notebooks, a child's points sensor and Mealie's entries."""
+    pronote, noe = _device(hass, "pronote", "Pronote - Noé")
+    _entity(hass, pronote, noe, "sensor", "pronote", "noe_grades", "grades")
+    _entity(hass, pronote, noe, "sensor", "pronote", "noe_punish", "punishments")
+    _entity(hass, pronote, noe, "sensor", "pronote", "noe_menus", "menus")
+    _entity(hass, pronote, noe, "sensor", "pronote", "noe_g1", "grades_period", "pronote_noe_grades_trimestre_1")
+    avg = _entity(hass, pronote, noe, "sensor", "pronote", "noe_a1", "averages_period", "pronote_noe_averages_t1")
+    hass.states.async_set(avg.entity_id, "3", {"period_key": "trimestre_1"})
+    ent, alex = _device(hass, "ent_one", "Alex")
+    _entity(hass, ent, alex, "sensor", "ent_one", "alex_sign", "words_to_sign")
+    book = _entity(hass, ent, alex, "todo", "ent_one", f"{ent.entry_id}_homework_abc123", "homework_book", "ent_maths")
+    _entity(hass, ent, alex, "sensor", "kidschores", "alex_pts", None, "kc_alex_points")
+    mealie, meal_dev = _device(hass, "mealie", "Mealie")
+    _entity(hass, mealie, meal_dev, "calendar", "mealie", "dinner")
+
+    inv = async_inventory(hass, {})
+    by_name = {c["name"]: c for c in inv["children"]}
+    noe_child = by_name["Noé"]["school"]
+    assert {"grades", "punishments", "menus"} <= set(noe_child["entities"])
+    assert noe_child["periods"] == {
+        "trimestre_1": {"grades": "sensor.pronote_noe_grades_trimestre_1", "averages": "sensor.pronote_noe_averages_t1"}
+    }
+    assert by_name["Alex"]["school"]["books"] == {"abc123": book.entity_id}
+    assert by_name["Alex"]["points"] == "sensor.kc_alex_points"
+    assert by_name["Noé"]["points"] is None
+    assert inv["mealie"] == [mealie.entry_id]
+
+
+async def test_points_sensor_is_a_whole_word(hass: HomeAssistant):
+    """An access point named after a child is not their points sensor."""
+    ent, alex = _device(hass, "ent_one", "Alex")
+    _entity(hass, ent, alex, "sensor", "ent_one", "alex_sign", "words_to_sign")
+    _entity(hass, ent, alex, "sensor", "unifi", "ap", None, "alex_access_point")
+    assert async_inventory(hass, {})["children"][0]["points"] is None
+    _entity(hass, ent, alex, "sensor", "kidschores", "pts", None, "alex_points")
+    assert async_inventory(hass, {})["children"][0]["points"] == "sensor.alex_points"
